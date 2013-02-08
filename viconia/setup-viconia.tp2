@@ -1,0 +1,120 @@
+// --------------------------------------
+// Viconia Friendship Setup
+//
+// Version:   V3.0
+// Author(s): K'aeloree
+// --------------------------------------
+// Backup directory
+BACKUP ~viconia/backup~
+
+// Error reports sent to K'aeloree
+AUTHOR ~kae@spellholdstudios.net~
+
+// Version
+VERSION ~v3.2~
+
+// Readme
+README ~viconia/translations/%LANGUAGE%/viconiafriendship.html~
+
+// Translations
+AUTO_TRA ~viconia/translations/%s~
+
+LANGUAGE ~English~
+         ~English~
+         ~viconia/translations/english/setup.tra~
+
+// Component
+BEGIN @0
+
+
+// --------------------------------------
+// Ids
+// --------------------------------------
+// Add custom IVFPD state
+APPEND ~state.ids~
+  ~0x80101FEF CD_STATE_NOTVALID~
+  UNLESS ~CD_STATE_NOTVALID~
+  
+// Ensures banters won't run in BG1 section in Baldur's Gate Trilogy
+ACTION_IF FILE_EXISTS ~DATA/BG1ARE.BIF~ THEN BEGIN
+    OUTER_SPRINT "percentage_sign" "%"
+    OUTER_SPRINT ~BGT_VAR~ ~Global("ENDOFBG1","GLOBAL",2)~
+END ELSE BEGIN
+    OUTER_SPRINT "percentage_sign" "%"
+    OUTER_SPRINT ~BGT_VAR~ ~~
+END
+
+
+// --------------------------------------
+// Dialogue
+// --------------------------------------
+// Compile dialogue
+COMPILE ~viconia/dialogue/viconij.d~
+  USING ~viconia/translations/english/viconij.tra~
+  	~viconia/translations/%s/viconij.tra~
+
+ACTION_IF (FILE_EXISTS_IN_GAME ~saradush.mve~) THEN BEGIN
+  COMPILE ~viconia/dialogue/vicon25j.d~
+    USING ~viconia/translations/english/vicon25j.tra~
+       	  ~viconia/translations/%s/vicon25j.tra~
+END
+
+
+// --------------------------------------
+// Scripts
+// --------------------------------------
+// Extend scripts
+EXTEND_BOTTOM ~viconia.bcs~ ~viconia/scripts/viconia.baf~
+  EVALUATE_BUFFER
+EXTEND_BOTTOM ~vicond.bcs~ ~viconia/scripts/vicond.baf~
+  EVALUATE_BUFFER
+
+ACTION_IF (FILE_EXISTS_IN_GAME ~saradush.mve~) THEN BEGIN
+  EXTEND_TOP ~vico25.bcs~ ~viconia/scripts/vico25.baf~
+END
+
+
+// --------------------------------------
+// Audio (ahahaha)
+// --------------------------------------
+COPY ~viconia/audio/i#blank.wav~ ~override~
+
+
+// --------------------------------------
+// Creatures
+// --------------------------------------
+// Handmaiden of Lolth
+COPY_EXISTING ~vicpri01.cre~ ~override/i#vhand.cre~
+  SAY                   NAME1           ~Handmaiden of Lolth~
+  SAY                   NAME2           ~Handmaiden of Lolth~
+  WRITE_EVALUATED_ASCII DIALOG          ~%DEST_RES%~ #8
+  WRITE_EVALUATED_ASCII DEATHVAR        ~%DEST_RES%~ #32
+  WRITE_EVALUATED_ASCII SCRIPT_OVERRIDE ~%DEST_RES%~ #8
+         
+// Yochlol
+  COPY_EXISTING ~yochlo01.cre~ ~override/i#vyoch.cre~
+  SAY                   NAME1           ~Yochlol~
+  SAY                   NAME2           ~Yochlol~
+  WRITE_EVALUATED_ASCII DIALOG          ~%DEST_RES%~ #8
+  WRITE_EVALUATED_ASCII DEATHVAR        ~%DEST_RES%~ #32
+  WRITE_EVALUATED_ASCII SCRIPT_OVERRIDE ~%DEST_RES%~ #8
+
+
+// --------------------------------------
+// New epilogues if ToB is installed
+// --------------------------------------
+ACTION_IF (FILE_EXISTS_IN_GAME ~saradush.mve~) THEN BEGIN
+  COPY ~viconia/epilogues/i#vic.2da~ ~override/i#vic1.2da~
+     REPLACE ~99999~ @1
+
+  COPY ~viconia/epilogues/i#vic.2da~ ~override/i#vic2.2da~
+     REPLACE ~99999~ @2
+     
+  COPY ~viconia/epilogues/i#vic.2da~ ~override/i#vic3.2da~
+     REPLACE ~99999~ @3
+     
+  COPY ~viconia/epilogues/i#vic.2da~ ~override/i#vic4.2da~
+     REPLACE ~99999~ @4
+
+  EXTEND_TOP ~ar6200.bcs~ ~viconia/scripts/ar6200.baf~
+END
